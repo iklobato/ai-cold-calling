@@ -268,7 +268,7 @@ Each prompt file should include:
 
 ### **Start the System**
 ```bash
-python app.py
+python main.py
 ```
 
 ### **System Output**
@@ -304,21 +304,34 @@ grep "Call initiated" calling_system.log
 
 ```
 ai-call/
-├── app.py                      # Main application script
-├── .env                        # Environment configuration
-├── requirements.txt            # Python dependencies (optional)
-├── README.md                   # This documentation
-├── contacts.csv                # Contact database (auto-created, headers only)
-├── dnc_list.txt                # Do Not Call list (auto-created)
-├── calling_system.log          # System event logs
-├── conversation_logs.jsonl     # Conversation transcripts (JSON Lines)
-└── prompts/                    # Sales script directory (auto-created)
+├── main.py            # Entry point for the application
+├── call_system.py     # Orchestration, compliance, and session management
+├── ai_manager.py      # AIConversationManager and AI/voice logic
+├── telephony.py       # Twilio integration and call initiation
+├── models.py          # Core dataclasses and enums
+├── config.py          # Configuration and environment loading
+├── .env               # Environment configuration
+├── requirements.txt   # Python dependencies (optional)
+├── README.md          # This documentation
+├── contacts.csv       # Contact database (auto-created, headers only)
+├── dnc_list.txt       # Do Not Call list (auto-created)
+├── calling_system.log # System event logs
+├── conversation_logs.jsonl # Conversation transcripts (JSON Lines)
+└── prompts/           # Sales script directory (auto-created)
     ├── default.txt
     ├── saas_product.txt
     ├── real_estate.txt
     ├── insurance.txt
     └── ecommerce.txt
 ```
+
+### **Module Purposes**
+- `main.py`: Application entry point.
+- `call_system.py`: Orchestrates calling sessions, compliance, and logging.
+- `ai_manager.py`: Handles AI, TTS, STT, and prompt logic.
+- `telephony.py`: Twilio call integration.
+- `models.py`: Core data structures.
+- `config.py`: Loads configuration from environment.
 
 ---
 
