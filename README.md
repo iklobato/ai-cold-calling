@@ -1,11 +1,14 @@
 # 🤖 AI-Powered Cold Calling System
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-[![Google AI](https://img.shields.io/badge/Google%20AI-Gemini-orange.svg)](https://ai.google.dev/)
+[![Mistral LLM](https://img.shields.io/badge/LLM-Mistral%207B-blueviolet.svg)](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
+[![Coqui TTS](https://img.shields.io/badge/TTS-Coqui%20TTS-orange.svg)](https://github.com/coqui-ai/TTS)
+[![Vosk STT](https://img.shields.io/badge/STT-Vosk-yellowgreen.svg)](https://alphacephei.com/vosk/)
+[![Plivo](https://img.shields.io/badge/Telephony-Plivo-brightgreen.svg)](https://www.plivo.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
-A sophisticated AI-powered cold calling system that automates phone outreach using Google AI's Gemini for intelligent conversations, Google Cloud Speech services for voice processing, and Plivo for telephony. The system manages contacts via CSV files, uses customizable prompt-based sales scripts, and includes built-in TCPA compliance features.
+A sophisticated AI-powered cold calling system that automates phone outreach using local LLM (Mistral-7B-Instruct) for intelligent conversations, Coqui TTS for voice synthesis, Vosk for speech recognition, and Plivo for telephony. The system manages contacts via CSV files, uses customizable prompt-based sales scripts, and includes built-in TCPA compliance features.
 
 ---
 
@@ -13,8 +16,8 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
 
 ### **Core Functionality**
 - **Automated Cold Calling**: Dials prospects from a CSV database during business hours
-- **AI-Powered Conversations**: Uses Google's Gemini LLM to conduct natural, contextual sales conversations
-- **Voice Processing**: Converts speech to text and text to speech for real-time voice interactions
+- **AI-Powered Conversations**: Uses Mistral-7B-Instruct LLM to conduct natural, contextual sales conversations
+- **Voice Processing**: Converts speech to text (Vosk) and text to speech (Coqui TTS) for real-time voice interactions
 - **Multi-Product Support**: Different sales scripts for different products/services via prompt files
 - **Compliance Management**: Built-in TCPA compliance with opt-out handling and calling hours
 - **Conversation Logging**: Records full conversation transcripts for analysis and compliance
@@ -35,24 +38,24 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
 ### **Technical Architecture**
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CSV Database  │    │  Prompt Files   │    │   Google AI     │
-│   (contacts.csv)│    │  (prompts/*.txt)│    │   (Gemini LLM)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌────────────────────────┐
+│   CSV Database  │    │  Prompt Files   │    │   Mistral LLM (local)  │
+│   (contacts.csv)│    │  (prompts/*.txt)│    │   (7B-Instruct)        │
+└─────────────────┘    └─────────────────┘    └────────────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
                                  │
-                    ┌─────────────────┐
-                    │   Call System   │
-                    │  (Main Script)  │
-                    └─────────────────┘
+                    ┌──────────────────────────────┐
+                    │   Call System (app.py)       │
+                    │  (Main Orchestration Script) │
+                    └──────────────────────────────┘
                                  │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Google Speech  │    │  Plivo Calling  │    │  Compliance     │
-│  (STT/TTS)      │    │  (Telephony)    │    │  (TCPA/DNC)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+         ┌───────────────────────┼────────────────────────────────────────────┐
+         │                       │                                            │
+┌─────────────────┐    ┌─────────────────┐    ┌────────────────────────────┐
+│  Vosk STT       │    │  Coqui TTS      │    │  Plivo Calling            │
+│  (Speech-to-Text│    │  (Text-to-Speech│    │  (Telephony API)          │
+└─────────────────┘    └─────────────────┘    └────────────────────────────┘
 ```
 
 ### **Call Flow Process**
@@ -61,9 +64,9 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
 2. **Compliance Check**: Validates consent, calling hours, and DNC status
 3. **Prompt Loading**: Loads appropriate sales script from `prompts/[prompt_name].txt`
 4. **Call Initiation**: Plivo API dials the prospect's phone number
-5. **Voice Processing**: Google Speech-to-Text captures prospect responses
-6. **AI Processing**: Gemini LLM generates contextual responses based on conversation history
-7. **Voice Synthesis**: Google Text-to-Speech converts AI responses to voice
+5. **Voice Processing**: Vosk Speech-to-Text captures prospect responses
+6. **AI Processing**: Mistral LLM generates contextual responses based on conversation history
+7. **Voice Synthesis**: Coqui TTS converts AI responses to voice
 8. **Conversation Management**: Tracks conversation state and detects opt-out requests
 9. **Call Completion**: Logs conversation transcript and updates contact status
 10. **Compliance Handling**: Processes opt-out requests and updates DNC lists
@@ -73,9 +76,9 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
 ```
 CSV Contact → Compliance Check → Prompt Selection → Call Initiation
      ↓
-Voice Input → Speech-to-Text → LLM Processing → Response Generation
+Voice Input → Speech-to-Text (Vosk) → LLM Processing (Mistral) → Response Generation
      ↓
-Text-to-Speech → Voice Output → Conversation Continue/End
+Text-to-Speech (Coqui) → Voice Output → Conversation Continue/End
      ↓
 Conversation Log → Contact Update → Compliance Update
 ```
@@ -84,7 +87,7 @@ Conversation Log → Contact Update → Compliance Update
 
 ## 🔧 System Components & Responsibilities
 
-### **1. Main Application (`CallSystem` class)**
+### **1. Main Application (`CallSystem` class in app.py)**
 **Responsibility**: Orchestrates the entire calling process
 - **Contact Management**: Loads, validates, and updates contact records
 - **Session Management**: Runs calling sessions with concurrency control
@@ -94,10 +97,10 @@ Conversation Log → Contact Update → Compliance Update
 
 ### **2. AI Conversation Manager (`AIConversationManager` class)**
 **Responsibility**: Handles AI-powered conversations
-- **Prompt Management**: Loads and manages sales scripts from text files
+- **Prompt Management**: Loads and manages sales scripts from text files (using LangChain PromptTemplate)
 - **Conversation State**: Tracks conversation history and context
-- **LLM Integration**: Interfaces with Google's Gemini for response generation
-- **Voice Processing**: Manages speech-to-text and text-to-speech operations
+- **LLM Integration**: Interfaces with Mistral-7B-Instruct for response generation
+- **Voice Processing**: Manages speech-to-text (Vosk) and text-to-speech (Coqui TTS) operations
 - **Opt-out Detection**: Recognizes and processes removal requests
 - **Response Generation**: Creates contextual, natural responses
 
@@ -127,7 +130,7 @@ Conversation Log → Contact Update → Compliance Update
 
 ### **6. External API Integrations**
 
-#### **Google AI (Gemini)**
+#### **Mistral LLM (local)**
 **Responsibility**: Provides conversational intelligence
 - **Natural Language Processing**: Understands prospect responses
 - **Context Awareness**: Maintains conversation history
@@ -135,11 +138,15 @@ Conversation Log → Contact Update → Compliance Update
 - **Objection Handling**: Processes and responds to sales objections
 - **Personalization**: Adapts responses based on prospect information
 
-#### **Google Cloud Speech**
-**Responsibility**: Handles voice processing
-- **Speech-to-Text**: Converts prospect voice to text for LLM processing
+#### **Coqui TTS (local)**
+**Responsibility**: Handles voice synthesis
 - **Text-to-Speech**: Converts AI responses to natural voice output
 - **Audio Quality**: Ensures clear, professional voice synthesis
+- **Language Support**: Handles multiple languages and accents
+
+#### **Vosk STT (local)**
+**Responsibility**: Handles voice recognition
+- **Speech-to-Text**: Converts prospect voice to text for LLM processing
 - **Language Support**: Handles multiple languages and accents
 
 #### **Plivo Telephony**
@@ -154,15 +161,14 @@ Conversation Log → Contact Update → Compliance Update
 ## 📋 Prerequisites
 
 ### **Required Services**
-- **Google AI API**: For Gemini LLM conversations
-- **Google Cloud Project**: For Speech-to-Text and Text-to-Speech
 - **Plivo Account**: For phone calling capabilities
 - **Python 3.8+**: Runtime environment
+- **Local Model Files**: Download Mistral, Coqui TTS, and Vosk models as required
 
 ### **System Requirements**
-- **Memory**: 2GB RAM minimum (4GB recommended)
-- **Storage**: 1GB free space for logs and data
-- **Network**: Stable internet connection for API calls
+- **Memory**: 8GB RAM minimum (16GB+ recommended for LLM)
+- **Storage**: Several GB free space for models, logs, and data
+- **Network**: Stable internet connection for Plivo API calls
 - **OS**: Linux, macOS, or Windows
 
 ---
@@ -173,30 +179,18 @@ Conversation Log → Contact Update → Compliance Update
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd ai-cold-calling-system
+cd ai-call
 
 # Install dependencies
-pip install google-generativeai google-cloud-speech google-cloud-texttospeech httpx pytz python-dotenv
-
-# Or use requirements.txt
-pip install -r requirements.txt
+pip install torch transformers TTS vosk httpx pytz python-dotenv langchain
 ```
 
-### **2. API Configuration**
+### **2. Model Downloads**
+- Download the Mistral-7B-Instruct model from HuggingFace (see https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
+- Download the Vosk English model (see https://alphacephei.com/vosk/models)
+- Coqui TTS models are downloaded automatically on first use
 
-#### **Google AI Setup**
-```bash
-# Get API key from https://makersuite.google.com/app/apikey
-export GOOGLE_AI_KEY="your_google_ai_api_key"
-```
-
-#### **Google Cloud Setup**
-```bash
-# Create project at https://console.cloud.google.com/
-# Enable Speech-to-Text and Text-to-Speech APIs
-# Create service account and download JSON key
-export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account-key.json"
-```
+### **3. API Configuration**
 
 #### **Plivo Setup**
 ```bash
@@ -207,15 +201,11 @@ export PLIVO_AUTH_TOKEN="your_plivo_auth_token"
 export PLIVO_PHONE_NUMBER="+1234567890"
 ```
 
-### **3. Configuration File**
+### **4. Configuration File**
 
 Create `.env` file in project root:
 
 ```bash
-# Google AI Configuration
-GOOGLE_AI_KEY=your_google_ai_api_key_here
-GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
-
 # Plivo Configuration
 PLIVO_AUTH_ID=your_plivo_auth_id
 PLIVO_AUTH_TOKEN=your_plivo_auth_token  
@@ -231,14 +221,12 @@ TIMEZONE=US/Eastern
 CONVERSATION_TIMEOUT=120
 ```
 
-### **4. Contact Database Setup**
+### **5. Contact Database Setup**
 
-The system auto-creates `contacts.csv` with sample data. Format:
+The system auto-creates `contacts.csv` with headers only. **You must add your own contact data.** Format:
 
 ```csv
 phone_number,name,email,company,status,call_attempts,consent_obtained,opt_out_date,prompt_name
-+1234567890,John Doe,john@techcorp.com,Tech Corp,pending,0,true,,saas_product
-+1234567891,Jane Smith,jane@realty.com,Smith Realty,pending,0,true,,real_estate
 ```
 
 **Column Descriptions:**
@@ -252,9 +240,9 @@ phone_number,name,email,company,status,call_attempts,consent_obtained,opt_out_da
 - `opt_out_date`: Date when contact opted out (ISO format)
 - `prompt_name`: Sales script to use (matches filename in prompts/ directory)
 
-### **5. Prompt Configuration**
+### **6. Prompt Configuration**
 
-The system auto-creates prompt files in `prompts/` directory:
+The system auto-creates the `prompts/` directory if missing. Add your prompt files as needed:
 
 ```
 prompts/
@@ -274,46 +262,13 @@ Each prompt file should include:
 - **Call-to-Action**: Next steps and closing
 - **Compliance**: Opt-out handling instructions
 
-**Example Prompt (`prompts/saas_product.txt`):**
-```
-Hi {name}, this is {agent_name} from ProductivityPro. Just a heads up, this call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
-
-I noticed {company} might benefit from our platform that helps teams work smarter. I’d love to learn about your needs and see if we can help.
-
-Here’s what we offer:
-- Save 2-3 hours per employee per day (based on real customer feedback)
-- Works with tools you already use
-- Most companies see results in about a month
-- Trusted by thousands of businesses
-
-Can I ask a few quick questions to understand your situation?
-- What’s your biggest productivity challenge?
-- How many people are on your team?
-- What tools do you use now?
-- Who usually decides on new software at your company?
-
-If you have any questions or concerns, just let me know. If I don’t know the answer, I’ll connect you with a human rep.
-
-If you’d like to end the call or be removed from our list, just say "stop" and I’ll do that right away.
-
-Would you be open to a quick 10-minute demo this week? If now isn’t a good time, just let me know what works for you.
-
-PROSPECT INFO:
-- Name: {name}
-- Company: {company}
-- Email: {email}
-- Phone: {phone_number}
-
-Let me know if you want to continue or have any questions!
-```
-
 ---
 
 ## 🎮 Usage
 
 ### **Start the System**
 ```bash
-python ai_cold_calling.py
+python app.py
 ```
 
 ### **System Output**
@@ -321,8 +276,6 @@ python ai_cold_calling.py
 🤖 AI-Powered Cold Calling System
 ==================================================
 Starting LLM-Powered Cold Calling System
-Created default prompt file: prompts/default.txt
-Created default prompt file: prompts/saas_product.txt
 Loaded prompt: default
 Loaded prompt: saas_product
 Available prompts (5): default, saas_product, real_estate, insurance, ecommerce
@@ -350,16 +303,16 @@ grep "Call initiated" calling_system.log
 ## 📁 File Structure
 
 ```
-ai-cold-calling-system/
-├── ai_cold_calling.py           # Main application script
-├── .env                         # Environment configuration
-├── requirements.txt             # Python dependencies
+ai-call/
+├── app.py                      # Main application script
+├── .env                        # Environment configuration
+├── requirements.txt            # Python dependencies (optional)
 ├── README.md                   # This documentation
-├── contacts.csv                # Contact database (auto-created)
-├── dnc_list.txt               # Do Not Call list (auto-created)
-├── calling_system.log         # System event logs
-├── conversation_logs.jsonl    # Conversation transcripts (JSON Lines)
-└── prompts/                   # Sales script directory (auto-created)
+├── contacts.csv                # Contact database (auto-created, headers only)
+├── dnc_list.txt                # Do Not Call list (auto-created)
+├── calling_system.log          # System event logs
+├── conversation_logs.jsonl     # Conversation transcripts (JSON Lines)
+└── prompts/                    # Sales script directory (auto-created)
     ├── default.txt
     ├── saas_product.txt
     ├── real_estate.txt
@@ -425,8 +378,8 @@ ai-cold-calling-system/
 
 ### **Data Privacy**
 - **Local Storage**: All data stored locally (no cloud storage)
-- **Encryption**: Sensitive data encrypted at rest
-- **Access Control**: Role-based access to system
+- **Encryption**: Sensitive data encrypted at rest (user responsibility)
+- **Access Control**: Role-based access to system (user responsibility)
 - **Audit Trail**: Complete activity logging
 
 ---
@@ -466,7 +419,7 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 
 **"Missing required API keys"**
 - Check `.env` file has all required credentials
-- Verify API keys are valid and active
+- Verify Plivo API keys are valid and active
 - Ensure environment variables are loaded
 
 **"No callable contacts"**
@@ -480,52 +433,19 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 - Test network connectivity
 - Review Plivo API status
 
-**"Google AI errors"**
-- Validate Google AI API key
-- Check API quota limits
-- Verify Google Cloud project configuration
-
-**"Speech service errors"**
-- Confirm Google Cloud credentials
-- Enable required APIs in Google Cloud Console
-- Check service account permissions
-
-### **Debug Mode**
-```bash
-# Enable debug logging
-export LOG_LEVEL=DEBUG
-python ai_cold_calling.py
-```
-
-### **Test Configuration**
-```bash
-# Test API connections
-python -c "
-import google.generativeai as genai
-genai.configure(api_key='your_key')
-print('Google AI: OK')
-
-from google.cloud import speech
-client = speech.SpeechClient()
-print('Google Speech: OK')
-
-import plivo
-client = plivo.RestClient('auth_id', 'auth_token')
-print('Plivo: OK')
-"
-```
+**"Model errors"**
+- Ensure Mistral, Vosk, and Coqui models are downloaded and accessible
+- Check system memory and storage
 
 ---
 
 ## 💰 Cost Estimates
 
 ### **Service Costs (Monthly)**
-- **Google AI (Gemini)**: ~$0.002 per 1K tokens (~$20 for 10K conversations)
-- **Google Speech-to-Text**: ~$0.024 per minute (~$240 for 10K minutes)  
-- **Google Text-to-Speech**: ~$0.016 per 1K characters (~$160 for 10K responses)
 - **Plivo Calling**: ~$0.0055 per minute (~$55 for 10K minutes)
+- **Local LLM/TTS/STT**: No per-use cost, but requires hardware resources
 
-**Total estimated cost**: ~$0.05 per minute of conversation
+**Total estimated cost**: Primarily telephony (Plivo) and hardware
 
 ### **Scaling Considerations**
 - **1,000 calls/month**: ~$50-75
@@ -544,12 +464,12 @@ print('Plivo: OK')
 
 ### **API Security**
 - Rotate API keys regularly
-- Use service account keys for Google Cloud
+- Use service account keys for Plivo
 - Implement rate limiting
 - Monitor API usage for anomalies
 
 ### **Compliance Security**
-- Encrypt conversation logs at rest
+- Encrypt conversation logs at rest (user responsibility)
 - Implement secure deletion of opted-out data
 - Regular compliance audits
 - Secure backup procedures
@@ -584,7 +504,7 @@ pip install -r requirements-dev.txt
 python -m pytest tests/
 
 # Code formatting
-black ai_cold_calling.py
+black app.py
 ```
 
 ### **Code Standards**
@@ -604,8 +524,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 ### **Documentation**
-- [Google AI Documentation](https://ai.google.dev/docs)
-- [Google Cloud Speech Documentation](https://cloud.google.com/speech-to-text/docs)
+- [Mistral LLM (HuggingFace)](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
+- [Coqui TTS Documentation](https://github.com/coqui-ai/TTS)
+- [Vosk Speech Recognition](https://alphacephei.com/vosk/)
 - [Plivo API Documentation](https://www.plivo.com/docs/)
 
 ### **Community**

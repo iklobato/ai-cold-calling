@@ -15,9 +15,11 @@ from enum import Enum
 
 import httpx
 import pytz
-import google.generativeai as genai
-from google.cloud import speech
-from google.cloud import texttospeech
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from TTS.api import TTS
+from vosk import Model as VoskModel, KaldiRecognizer
+import wave
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 
@@ -73,10 +75,19 @@ class ConversationState:
 class AIConversationManager:
     def __init__(self, config: Config):
         self.config = config
-        genai.configure(api_key=config.google_ai_key)
-        self.model = genai.GenerativeModel('gemini-pro')
-        self.speech_client = speech.SpeechClient()
-        self.tts_client = texttospeech.TextToSpeechClient()
+        # Mistral LLM setup
+        self.tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+        self.model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+        self.generator = pipeline(
+            "text-generation",
+            model=self.model,
+            tokenizer=self.tokenizer,
+            device=0 if torch.cuda.is_available() else -1
+        )
+        # Coqui TTS setup
+        self.tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False)
+        # Vosk STT setup (ensure model is downloaded and path is correct)
+        self.vosk_model = VoskModel("models/vosk-model-small-en-us-0.15")
         self.prompts = self.load_prompts()
         self.active_conversations: Dict[str, ConversationState] = {}
         logging.info("AIConversationManager initialized.")
@@ -164,10 +175,9 @@ class AIConversationManager:
                 f"{base_prompt}\n\nCONVERSATION HISTORY:\n{conversation_context}\n\nUSER INPUT: {user_input}\n\n"
                 "Generate a natural, conversational response. Keep it under 30 seconds when spoken."
             )
-            logging.debug(f"Full prompt for call_id={conversation.call_id}: {full_prompt}")
-            response = self.model.generate_content(full_prompt)
-            logging.info(f"Generated response for call_id={conversation.call_id}")
-            return response.text.strip()
+            # Use Mistral for generation
+            result = self.generator(full_prompt, max_new_tokens=200, do_sample=True, temperature=0.7)
+            return result[0]['generated_text'].strip()
         except Exception as e:
             logging.error(f"Error generating response: {e}")
             return "I apologize, I'm having technical difficulties. Let me transfer you to a human representative."
@@ -206,23 +216,12 @@ class AIConversationManager:
     async def text_to_speech(self, text: str) -> bytes:
         try:
             logging.info(f"Converting text to speech: {text[:60]}...")
-            synthesis_input = texttospeech.SynthesisInput(text=text)
-            voice = texttospeech.VoiceSelectionParams(
-                language_code="en-US",
-                ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
-            )
-            audio_config = texttospeech.AudioConfig(
-                audio_encoding=texttospeech.AudioEncoding.MP3
-            )
-            
-            response = self.tts_client.synthesize_speech(
-                input=synthesis_input, 
-                voice=voice, 
-                audio_config=audio_config
-            )
-            logging.info("Text-to-speech conversion successful.")
-            return response.audio_content
-            
+            temp_path = "temp_tts.wav"
+            self.tts.tts_to_file(text=text, file_path=temp_path)
+            with open(temp_path, "rb") as f:
+                audio_content = f.read()
+            os.remove(temp_path)
+            return audio_content
         except Exception as e:
             logging.error(f"TTS error: {e}")
             return b""
@@ -230,22 +229,24 @@ class AIConversationManager:
     async def speech_to_text(self, audio_data: bytes) -> str:
         try:
             logging.info("Converting speech to text.")
-            audio = speech.RecognitionAudio(content=audio_data)
-            config = speech.RecognitionConfig(
-                encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                sample_rate_hertz=16000,
-                language_code="en-US",
-            )
-            
-            response = self.speech_client.recognize(config=config, audio=audio)
-            
-            if response.results:
-                transcript = response.results[0].alternatives[0].transcript
-                logging.info(f"Speech-to-text result: {transcript}")
-                return transcript
-            logging.info("No speech recognized.")
-            return ""
-            
+            temp_path = "temp_stt.wav"
+            with open(temp_path, "wb") as f:
+                f.write(audio_data)
+            wf = wave.open(temp_path, "rb")
+            rec = KaldiRecognizer(self.vosk_model, wf.getframerate())
+            result = ""
+            while True:
+                data = wf.readframes(4000)
+                if len(data) == 0:
+                    break
+                if rec.AcceptWaveform(data):
+                    res = rec.Result()
+                    result += json.loads(res).get("text", "")
+            res = rec.FinalResult()
+            result += json.loads(res).get("text", "")
+            wf.close()
+            os.remove(temp_path)
+            return result.strip()
         except Exception as e:
             logging.error(f"STT error: {e}")
             return ""
