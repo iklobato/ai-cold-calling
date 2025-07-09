@@ -22,16 +22,15 @@ from vosk import Model as VoskModel, KaldiRecognizer
 import wave
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
+from twilio.rest import Client
 
 load_dotenv()
 
 @dataclass
 class Config:
-    google_ai_key: str = os.getenv("GOOGLE_AI_KEY", "")
-    google_cloud_project: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-    plivo_auth_id: str = os.getenv("PLIVO_AUTH_ID", "")
-    plivo_auth_token: str = os.getenv("PLIVO_AUTH_TOKEN", "")
-    plivo_phone_number: str = os.getenv("PLIVO_PHONE_NUMBER", "")
+    twilio_account_sid: str = os.getenv("TWILIO_ACCOUNT_SID", "")
+    twilio_auth_token: str = os.getenv("TWILIO_AUTH_TOKEN", "")
+    twilio_phone_number: str = os.getenv("TWILIO_PHONE_NUMBER", "")
     csv_file: str = os.getenv("CSV_FILE_PATH", "contacts.csv")
     prompts_dir: str = os.getenv("PROMPTS_DIR", "prompts")
     max_concurrent_calls: int = int(os.getenv("MAX_CONCURRENT_CALLS", "3"))
@@ -282,14 +281,13 @@ class CallSystem:
     
     def validate_config(self):
         required = [
-            self.config.google_ai_key, 
-            self.config.plivo_auth_id, 
-            self.config.plivo_auth_token, 
-            self.config.plivo_phone_number
+            self.config.twilio_account_sid, 
+            self.config.twilio_auth_token, 
+            self.config.twilio_phone_number
         ]
         if not all(required):
-            logging.error("Missing required API keys")
-            raise ValueError("Missing required API keys")
+            logging.error("Missing required Twilio API keys")
+            raise ValueError("Missing required Twilio API keys")
         logging.info("Config validated.")
     
     def setup_logging(self):
@@ -407,48 +405,35 @@ class CallSystem:
     async def make_call(self, contact: Contact) -> dict:
         async with self.semaphore:
             call_id = f"call_{contact.phone_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            
             try:
                 if not self.is_callable(contact):
                     return {"status": "blocked", "phone": contact.phone_number}
-                
                 self.update_contact_status(contact.phone_number, CallStatus.CALLING.value, True)
-                
                 conversation = await self.ai_manager.start_conversation(contact, call_id)
-                
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        f"https://api.plivo.com/v1/Account/{self.config.plivo_auth_id}/Call/",
-                        auth=(self.config.plivo_auth_id, self.config.plivo_auth_token),
-                        data={
-                            "from": self.config.plivo_phone_number,
-                            "to": contact.phone_number,
-                            "answer_url": f"https://yourapp.com/webhook/answer/{call_id}",
-                            "hangup_url": f"https://yourapp.com/webhook/hangup/{call_id}",
-                            "time_limit": str(self.config.conversation_timeout)
-                        }
-                    )
-                
-                call_uuid = response.json().get("call_uuid")
-                self.logger.info(f"Call initiated: {contact.phone_number} -> {call_uuid} (Prompt: {contact.prompt_name})")
-                
+                # Twilio call initiation
+                client = Client(self.config.twilio_account_sid, self.config.twilio_auth_token)
+                twiml_url = f"https://yourapp.com/twiml/{call_id}"  # Placeholder, should point to your TwiML handler
+                call = client.calls.create(
+                    to=contact.phone_number,
+                    from_=self.config.twilio_phone_number,
+                    url=twiml_url,
+                    timeout=self.config.conversation_timeout
+                )
+                call_sid = call.sid
+                self.logger.info(f"Call initiated: {contact.phone_number} -> {call_sid} (Prompt: {contact.prompt_name})")
                 await asyncio.sleep(2)
-                
                 conversation_summary = self.ai_manager.end_conversation(call_id)
                 if conversation_summary:
                     self.save_conversation_log(conversation_summary)
-                
                 final_status = CallStatus.OPTED_OUT.value if conversation.opt_out_requested else CallStatus.COMPLETED.value
                 self.update_contact_status(contact.phone_number, final_status)
-                
                 return {
                     "status": "success", 
                     "phone": contact.phone_number, 
-                    "call_uuid": call_uuid,
+                    "call_sid": call_sid,
                     "conversation_id": call_id,
                     "opt_out": conversation.opt_out_requested
                 }
-                
             except Exception as e:
                 self.logger.error(f"Call failed {contact.phone_number}: {e}")
                 self.update_contact_status(contact.phone_number, CallStatus.FAILED.value)

@@ -4,11 +4,11 @@
 [![Mistral LLM](https://img.shields.io/badge/LLM-Mistral%207B-blueviolet.svg)](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
 [![Coqui TTS](https://img.shields.io/badge/TTS-Coqui%20TTS-orange.svg)](https://github.com/coqui-ai/TTS)
 [![Vosk STT](https://img.shields.io/badge/STT-Vosk-yellowgreen.svg)](https://alphacephei.com/vosk/)
-[![Plivo](https://img.shields.io/badge/Telephony-Plivo-brightgreen.svg)](https://www.plivo.com/)
+[![Twilio](https://img.shields.io/badge/Telephony-Twilio-red.svg)](https://www.twilio.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
-A sophisticated AI-powered cold calling system that automates phone outreach using local LLM (Mistral-7B-Instruct) for intelligent conversations, Coqui TTS for voice synthesis, Vosk for speech recognition, and Plivo for telephony. The system manages contacts via CSV files, uses customizable prompt-based sales scripts, and includes built-in TCPA compliance features.
+A sophisticated AI-powered cold calling system that automates phone outreach using local LLM (Mistral-7B-Instruct) for intelligent conversations, Coqui TTS for voice synthesis, Vosk for speech recognition, and Twilio for telephony. The system manages contacts via CSV files, uses customizable prompt-based sales scripts, and includes built-in TCPA compliance features.
 
 ---
 
@@ -53,7 +53,7 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
          ┌───────────────────────┼────────────────────────────────────────────┐
          │                       │                                            │
 ┌─────────────────┐    ┌─────────────────┐    ┌────────────────────────────┐
-│  Vosk STT       │    │  Coqui TTS      │    │  Plivo Calling            │
+│  Vosk STT       │    │  Coqui TTS      │    │  Twilio Calling           │
 │  (Speech-to-Text│    │  (Text-to-Speech│    │  (Telephony API)          │
 └─────────────────┘    └─────────────────┘    └────────────────────────────┘
 ```
@@ -63,7 +63,7 @@ A sophisticated AI-powered cold calling system that automates phone outreach usi
 1. **Contact Selection**: System reads `contacts.csv` and selects callable prospects
 2. **Compliance Check**: Validates consent, calling hours, and DNC status
 3. **Prompt Loading**: Loads appropriate sales script from `prompts/[prompt_name].txt`
-4. **Call Initiation**: Plivo API dials the prospect's phone number
+4. **Call Initiation**: Twilio API dials the prospect's phone number using a TwiML handler URL
 5. **Voice Processing**: Vosk Speech-to-Text captures prospect responses
 6. **AI Processing**: Mistral LLM generates contextual responses based on conversation history
 7. **Voice Synthesis**: Coqui TTS converts AI responses to voice
@@ -149,11 +149,11 @@ Conversation Log → Contact Update → Compliance Update
 - **Speech-to-Text**: Converts prospect voice to text for LLM processing
 - **Language Support**: Handles multiple languages and accents
 
-#### **Plivo Telephony**
+#### **Twilio Telephony**
 **Responsibility**: Manages phone call operations
 - **Call Routing**: Dials prospect phone numbers
 - **Call Control**: Manages call duration and termination
-- **Webhook Integration**: Handles call events and status updates
+- **TwiML Handler**: Uses a TwiML URL to control call flow (must be implemented by user)
 - **Quality Assurance**: Ensures reliable call delivery
 
 ---
@@ -161,14 +161,14 @@ Conversation Log → Contact Update → Compliance Update
 ## 📋 Prerequisites
 
 ### **Required Services**
-- **Plivo Account**: For phone calling capabilities
+- **Twilio Account**: For phone calling capabilities
 - **Python 3.8+**: Runtime environment
 - **Local Model Files**: Download Mistral, Coqui TTS, and Vosk models as required
 
 ### **System Requirements**
 - **Memory**: 8GB RAM minimum (16GB+ recommended for LLM)
 - **Storage**: Several GB free space for models, logs, and data
-- **Network**: Stable internet connection for Plivo API calls
+- **Network**: Stable internet connection for Twilio API calls
 - **OS**: Linux, macOS, or Windows
 
 ---
@@ -182,7 +182,7 @@ git clone <repository-url>
 cd ai-call
 
 # Install dependencies
-pip install torch transformers TTS vosk httpx pytz python-dotenv langchain
+pip install torch transformers TTS vosk httpx pytz python-dotenv langchain twilio
 ```
 
 ### **2. Model Downloads**
@@ -192,13 +192,13 @@ pip install torch transformers TTS vosk httpx pytz python-dotenv langchain
 
 ### **3. API Configuration**
 
-#### **Plivo Setup**
+#### **Twilio Setup**
 ```bash
-# Get credentials from https://console.plivo.com/accounts/credentials/
-# Purchase phone number from Plivo dashboard
-export PLIVO_AUTH_ID="your_plivo_auth_id"
-export PLIVO_AUTH_TOKEN="your_plivo_auth_token"
-export PLIVO_PHONE_NUMBER="+1234567890"
+# Get credentials from https://console.twilio.com/
+# Purchase phone number from Twilio dashboard
+export TWILIO_ACCOUNT_SID="your_twilio_account_sid"
+export TWILIO_AUTH_TOKEN="your_twilio_auth_token"
+export TWILIO_PHONE_NUMBER="+1234567890"
 ```
 
 ### **4. Configuration File**
@@ -206,10 +206,10 @@ export PLIVO_PHONE_NUMBER="+1234567890"
 Create `.env` file in project root:
 
 ```bash
-# Plivo Configuration
-PLIVO_AUTH_ID=your_plivo_auth_id
-PLIVO_AUTH_TOKEN=your_plivo_auth_token  
-PLIVO_PHONE_NUMBER=+1234567890
+# Twilio Configuration
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token  
+TWILIO_PHONE_NUMBER=+1234567890
 
 # System Configuration
 CSV_FILE_PATH=contacts.csv
@@ -282,7 +282,7 @@ Available prompts (5): default, saas_product, real_estate, insurance, ecommerce
 Prompt files location: /path/to/prompts
 To add new prompts: create new .txt files in the prompts directory
 Calling 3 contacts
-Call initiated: +1234567890 -> call_uuid_123 (Prompt: saas_product)
+Call initiated: +1234567890 -> call_sid_123 (Prompt: saas_product)
 Session complete: 3/3 successful, 1 opt-outs
 ```
 
@@ -411,6 +411,10 @@ TIMEZONE=US/Pacific      # Pacific timezone
 MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 ```
 
+### **TwiML Handler**
+- You must implement a TwiML handler endpoint (e.g., using Flask, Django, or FastAPI) to provide call instructions to Twilio. The system will use a URL like `https://yourapp.com/twiml/{call_id}` when initiating calls. This endpoint should return valid TwiML XML to control the call flow (e.g., play audio, gather input, etc.).
+- See [Twilio TwiML Docs](https://www.twilio.com/docs/voice/twiml) for details.
+
 ---
 
 ## 🐛 Troubleshooting
@@ -419,7 +423,7 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 
 **"Missing required API keys"**
 - Check `.env` file has all required credentials
-- Verify Plivo API keys are valid and active
+- Verify Twilio API keys are valid and active
 - Ensure environment variables are loaded
 
 **"No callable contacts"**
@@ -428,10 +432,10 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 - Confirm calling hours settings
 
 **"Call failed"**
-- Check Plivo account balance
+- Check Twilio account balance
 - Verify phone number format (+1234567890)
 - Test network connectivity
-- Review Plivo API status
+- Review Twilio API status
 
 **"Model errors"**
 - Ensure Mistral, Vosk, and Coqui models are downloaded and accessible
@@ -442,15 +446,15 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 ## 💰 Cost Estimates
 
 ### **Service Costs (Monthly)**
-- **Plivo Calling**: ~$0.0055 per minute (~$55 for 10K minutes)
+- **Twilio Calling**: ~$0.013 per minute (US, as of 2024; see [Twilio Pricing](https://www.twilio.com/voice/pricing))
 - **Local LLM/TTS/STT**: No per-use cost, but requires hardware resources
 
-**Total estimated cost**: Primarily telephony (Plivo) and hardware
+**Total estimated cost**: Primarily telephony (Twilio) and hardware
 
 ### **Scaling Considerations**
-- **1,000 calls/month**: ~$50-75
-- **10,000 calls/month**: ~$500-750
-- **100,000 calls/month**: ~$5,000-7,500
+- **1,000 calls/month**: ~$100-150
+- **10,000 calls/month**: ~$1,000-1,500
+- **100,000 calls/month**: ~$10,000-15,000
 
 ---
 
@@ -464,7 +468,7 @@ MAX_CONCURRENT_CALLS=5   # Max 5 simultaneous calls
 
 ### **API Security**
 - Rotate API keys regularly
-- Use service account keys for Plivo
+- Use service account keys for Twilio
 - Implement rate limiting
 - Monitor API usage for anomalies
 
@@ -527,7 +531,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Mistral LLM (HuggingFace)](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
 - [Coqui TTS Documentation](https://github.com/coqui-ai/TTS)
 - [Vosk Speech Recognition](https://alphacephei.com/vosk/)
-- [Plivo API Documentation](https://www.plivo.com/docs/)
+- [Twilio API Documentation](https://www.twilio.com/docs/)
+- [Twilio TwiML Docs](https://www.twilio.com/docs/voice/twiml)
 
 ### **Community**
 - GitHub Issues for bug reports
