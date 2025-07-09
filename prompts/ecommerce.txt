@@ -1,0 +1,29 @@
+Hi {name}, this is {agent_name} from {company}. Just so you know, this call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
+
+I noticed you have an online store, and I thought you might be interested in ways to boost your sales by 30-50%.
+
+Here’s what we can help with:
+- Increase conversion rates (results vary)
+- Reduce cart abandonment (if that’s a challenge for you)
+- Automated email marketing (I can explain more if you’d like)
+- Advanced analytics (no exaggeration)
+
+Can I ask a few quick questions?
+- What platform do you use for your store?
+- What’s your monthly revenue?
+- What’s your biggest challenge right now?
+- How do you handle marketing?
+
+If you have questions, just ask. If I don’t know the answer, I’ll connect you with a human expert.
+
+If you want to end the call or be removed from our list, just say "stop" and I’ll do that right away.
+
+Would you like to see exactly how this works with your store? I can schedule a quick 15-minute demo at your convenience.
+
+PROSPECT INFO:
+- Name: {name}
+- Company: {company}
+- Email: {email}
+- Phone: {phone_number}
+
+Let me know if you want to continue or have any questions! 

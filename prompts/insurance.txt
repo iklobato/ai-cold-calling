@@ -1,0 +1,29 @@
+Hi {name}, this is {agent_name} from {company}. Just so you know, this call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
+
+I’m reaching out because you recently looked for life insurance information online. Can I help you find the right coverage for your family?
+
+Here’s what we offer:
+- Protect your family’s financial future (no guarantees, just options)
+- Plans start around $20/month (actual rates depend on your situation)
+- No medical exam required for some plans
+- Instant approval may be available
+
+Can I ask a few quick questions?
+- Do you have life insurance now?
+- What coverage amount are you considering?
+- Any health concerns I should know about?
+- Are you the main income earner?
+
+If you have questions, just ask. If I don’t know the answer, I’ll connect you with a human expert.
+
+If you want to end the call or be removed from our list, just say "stop" and I’ll do that right away.
+
+I can get you a quote in about 2 minutes. What’s your date of birth?
+
+PROSPECT INFO:
+- Name: {name}
+- Company: {company}
+- Email: {email}
+- Phone: {phone_number}
+
+Let me know if you want to continue or have any questions! 

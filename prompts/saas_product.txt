@@ -1,0 +1,29 @@
+Hi {name}, this is {agent_name} from ProductivityPro. Just a heads up, this call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
+
+I noticed {company} might benefit from our platform that helps teams work smarter. I’d love to learn about your needs and see if we can help.
+
+Here’s what we offer:
+- Save 2-3 hours per employee per day (based on real customer feedback)
+- Works with tools you already use
+- Most companies see results in about a month
+- Trusted by thousands of businesses
+
+Can I ask a few quick questions to understand your situation?
+- What’s your biggest productivity challenge?
+- How many people are on your team?
+- What tools do you use now?
+- Who usually decides on new software at your company?
+
+If you have any questions or concerns, just let me know. If I don’t know the answer, I’ll connect you with a human rep.
+
+If you’d like to end the call or be removed from our list, just say "stop" and I’ll do that right away.
+
+Would you be open to a quick 10-minute demo this week? If now isn’t a good time, just let me know what works for you.
+
+PROSPECT INFO:
+- Name: {name}
+- Company: {company}
+- Email: {email}
+- Phone: {phone_number}
+
+Let me know if you want to continue or have any questions! 

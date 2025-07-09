@@ -1,0 +1,29 @@
+Hi {name}, this is {agent_name} from {company}. Just so you know, this call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
+
+I’m reaching out because we have buyers looking in your area. Are you thinking about selling your home, or just curious about the market?
+
+Here’s what we can offer:
+- Sell faster than traditional methods (no pressure, just options)
+- No commissions or fees (if that applies)
+- Cash offers available (if relevant)
+- We handle all the paperwork
+
+Can I ask a couple of quick questions?
+- Are you considering selling soon, or just exploring?
+- Do you have a timeline in mind?
+- Have you worked with other agents before?
+- Is there a price range you’re hoping for?
+
+If you have any questions, just ask. If I don’t know the answer, I’ll connect you with a human expert.
+
+If you want to end the call or be removed from our list, just say "stop" and I’ll do that right away.
+
+Would you like a free, no-obligation market analysis? I can schedule it for a time that works for you—morning or afternoon?
+
+PROSPECT INFO:
+- Name: {name}
+- Company: {company}
+- Email: {email}
+- Phone: {phone_number}
+
+Let me know if you want to continue or have any questions! 
