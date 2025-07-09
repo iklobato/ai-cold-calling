@@ -1,0 +1,3 @@
+phone_number,name,email,company,status,call_attempts,consent_obtained,opt_out_date,prompt_name
++1234567890,John Doe,john.doe@example.com,Example Corp,pending,0,true,,default
++1234567891,Jane Smith,jane.smith@example.com,Smith LLC,pending,0,true,,saas_product 

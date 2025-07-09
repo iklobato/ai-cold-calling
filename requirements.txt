@@ -1,0 +1,9 @@
+torch
+transformers
+TTS
+vosk
+httpx
+pytz
+python-dotenv
+langchain
+twilio 

@@ -1,0 +1,13 @@
+Hi {name}, this is {agent_name} from Example Company. This call uses AI technology to help answer your questions. You can say "stop" at any time to end the call.
+
+We offer:
+- Feature 1
+- Feature 2
+
+Can I ask a few questions to understand your needs?
+- What is your main challenge?
+- Who decides on new solutions at your company?
+
+If you want to end the call or be removed from our list, just say "stop" and I'll do that right away.
+
+Would you be open to a quick demo this week? 

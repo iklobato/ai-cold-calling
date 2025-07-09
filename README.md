@@ -311,18 +311,23 @@ ai-call/
 ├── models.py          # Core dataclasses and enums
 ├── config.py          # Configuration and environment loading
 ├── .env               # Environment configuration
-├── requirements.txt   # Python dependencies (optional)
+├── .env.example       # Example environment configuration (template)
+├── requirements.txt   # Python dependencies
 ├── README.md          # This documentation
 ├── contacts.csv       # Contact database (auto-created, headers only)
+├── contacts.example.csv # Example contacts CSV
 ├── dnc_list.txt       # Do Not Call list (auto-created)
+├── dnc_list.example.txt # Example Do Not Call list
 ├── calling_system.log # System event logs
 ├── conversation_logs.jsonl # Conversation transcripts (JSON Lines)
+├── conversation_logs.example.jsonl # Example conversation log
 └── prompts/           # Sales script directory (auto-created)
     ├── default.txt
     ├── saas_product.txt
     ├── real_estate.txt
     ├── insurance.txt
-    └── ecommerce.txt
+    ├── ecommerce.txt
+    └── example.txt    # Example prompt file
 ```
 
 ### **Module Purposes**
@@ -332,6 +337,19 @@ ai-call/
 - `telephony.py`: Twilio call integration.
 - `models.py`: Core data structures.
 - `config.py`: Loads configuration from environment.
+
+---
+
+## 📄 Example & Template Files
+
+- **.env.example**: Template for environment variables. Copy to `.env` and fill in your credentials and settings.
+- **requirements.txt**: Lists all required Python dependencies. Use `pip install -r requirements.txt` to install.
+- **contacts.example.csv**: Example contacts CSV file. Copy to `contacts.csv` and edit with your own contacts.
+- **prompts/example.txt**: Example prompt file showing the expected structure and variables. Use as a template for your own prompts.
+- **dnc_list.example.txt**: Example Do Not Call list. Copy to `dnc_list.txt` and add numbers to block.
+- **conversation_logs.example.jsonl**: Example conversation log file, showing the format of conversation logs.
+
+These files help you get started quickly and ensure you use the correct formats for configuration, contacts, prompts, and logs.
 
 ---
 
